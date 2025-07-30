@@ -9,6 +9,8 @@ public partial class Material
 
     public string Nombre { get; set; } = null!;
 
+    public string NombreVenta { get; set; } = null!;
+
     public string UnidadMedida { get; set; } = null!;
 
     public decimal? StockActual { get; set; }
