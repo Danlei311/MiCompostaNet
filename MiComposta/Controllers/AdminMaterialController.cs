@@ -25,6 +25,7 @@ namespace MiComposta.Controllers
             {
                 Nombre = request.Nombre,
                 UnidadMedida = request.UnidadMedida,
+                NombreVenta = request.NombreVenta,
                 StockActual = 0,
                 CostoPromedioActual = 0,
                 Activo = true
@@ -47,6 +48,7 @@ namespace MiComposta.Controllers
             {
                 m.IdMaterial,
                 m.Nombre,
+                m.NombreVenta,
                 m.UnidadMedida,
                 m.StockActual,
                 m.CostoPromedioActual
@@ -68,6 +70,7 @@ namespace MiComposta.Controllers
 
             material.Nombre = request.Nombre;
             material.UnidadMedida = request.UnidadMedida;
+            material.NombreVenta = request.NombreVenta;
 
             // Guardamos los cambios
             _context.SaveChanges();
