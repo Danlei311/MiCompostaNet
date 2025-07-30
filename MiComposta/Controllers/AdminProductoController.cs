@@ -15,7 +15,6 @@ namespace MiComposta.Controllers
         {
             _context = context;
         }
-
         // Insertar un nuevo producto con sus materiales necesarios
         [HttpPost]
         [Route("addProducto")]
@@ -67,7 +66,6 @@ namespace MiComposta.Controllers
                 });
             }
         }
-
         // Obtener Prodcutos y su relación con materiales
         [HttpGet]
         [Route("getProductosConMateriales")]
@@ -116,7 +114,6 @@ namespace MiComposta.Controllers
                 success = true
             });
         }
-
         [HttpPut]
         [Route("updateProducto/{id}")]
         public IActionResult UpdateProducto(int id, [FromBody] ProductoUpdateDto updateDto)
@@ -139,7 +136,5 @@ namespace MiComposta.Controllers
                 success = true
             });
         }
-
-
     }
 }
