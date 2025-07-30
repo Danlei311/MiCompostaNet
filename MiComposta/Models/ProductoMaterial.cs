@@ -11,6 +11,8 @@ public partial class ProductoMaterial
 
     public decimal CantidadRequerida { get; set; }
 
+    public bool? Obligatorio { get; set; }
+
     public virtual Material IdMaterialNavigation { get; set; } = null!;
 
     public virtual Producto IdProductoNavigation { get; set; } = null!;
