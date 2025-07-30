@@ -42,7 +42,8 @@ namespace MiComposta.Controllers
             var userInfo = new
             {
                 usuario.IdUsuario,
-                usuario.Rol
+                usuario.Rol,
+                usuario.Nombre
             };
 
             // Enviar el id y rol como respuesta
