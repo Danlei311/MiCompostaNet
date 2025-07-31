@@ -39,7 +39,8 @@ namespace MiComposta.Controllers
                     {
                         IdProducto = nuevoProducto.IdProducto,
                         IdMaterial = material.IdMaterial,
-                        CantidadRequerida = material.CantidadRequerida
+                        CantidadRequerida = material.CantidadRequerida,
+                        Obligatorio = material.Obligatorio
                     };
 
                     _context.ProductoMaterials.Add(productoMaterial);
@@ -66,6 +67,7 @@ namespace MiComposta.Controllers
                 });
             }
         }
+
         // Obtener Prodcutos y su relación con materiales
         [HttpGet]
         [Route("getProductosConMateriales")]
@@ -83,6 +85,7 @@ namespace MiComposta.Controllers
                         pm.IdMaterial,
                         NombreMaterial = pm.IdMaterialNavigation.Nombre,
                         Unidad = pm.IdMaterialNavigation.UnidadMedida,
+                        pm.Obligatorio,
                         pm.CantidadRequerida
                     }).ToList()
                 })
