@@ -17,7 +17,11 @@ public partial class Cotizacion
 
     public string? Estado { get; set; }
 
+    public int IdProducto { get; set; }
+
     public virtual ICollection<CotizacionDetalle> CotizacionDetalles { get; set; } = new List<CotizacionDetalle>();
+
+    public virtual Producto IdProductoNavigation { get; set; } = null!;
 
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;
 
