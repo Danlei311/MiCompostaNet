@@ -163,6 +163,122 @@ namespace MiComposta.Controllers
             return Ok(new { message = "Usuario actualizado correctamente.", success = true });
         }
 
+        [HttpGet]
+        [Route("getUsuariosPendientes")]
+        public IActionResult GetUsuariosPendientes()
+        {
+            var usuariosPendientes = _context.Usuarios
+                .Where(u => u.Activo == false)
+                .Select(u => new
+                {
+                    Usuario = new
+                    {
+                        u.IdUsuario,
+                        u.Nombre,
+                        u.Apellido,
+                        u.Correo,
+                        u.Telefono,
+                        u.Rol
+                    },
+                    Cotizaciones = _context.Cotizacions
+                        .Where(c => c.IdUsuario == u.IdUsuario && c.Estado == "Revision")
+                        .Select(c => new
+                        {
+                            c.IdCotizacion,
+                            c.FechaCotizacion,
+                            c.TotalVenta,
+                            c.Estado,
+                            Producto = _context.Productos
+                                .Where(p => p.IdProducto == c.IdProducto)
+                                .Select(p => p.Nombre)
+                                .FirstOrDefault(),
+                            Detalles = _context.CotizacionDetalles
+                                .Where(d => d.IdCotizacion == c.IdCotizacion)
+                                .Select(d => new
+                                {
+                                    d.IdMaterial,
+                                    Material = _context.Materials
+                                        .Where(m => m.IdMaterial == d.IdMaterial)
+                                        .Select(m => m.NombreVenta)
+                                        .FirstOrDefault(),
+                                    d.Cantidad,
+                                    d.CostoPromedioAlMomento
+                                })
+                                .ToList()
+                        })
+                        .ToList()
+                })
+                .Where(u => u.Cotizaciones.Any()) // Solo usuarios con cotizaciones en revisión
+                .ToList();
+
+            return Ok(usuariosPendientes);
+        }
+
+
+        [HttpPut]
+        [Route("procesarSolicitud/{idUsuario}")]
+        public IActionResult ProcesarSolicitud(int idUsuario, [FromBody] ProcesarSolicitudDto request)
+        {
+            using var transaction = _context.Database.BeginTransaction();
+
+            try
+            {
+                // 1. Verificar que el usuario existe
+                var usuario = _context.Usuarios.FirstOrDefault(u => u.IdUsuario == idUsuario);
+                if (usuario == null)
+                {
+                    return NotFound(new { message = "Usuario no encontrado.", success = false });
+                }
+
+                // 2. Verificar que la cotización existe y está en estado "Revision"
+                var cotizacion = _context.Cotizacions
+                    .FirstOrDefault(c => c.IdCotizacion == request.IdCotizacion &&
+                                       c.IdUsuario == idUsuario &&
+                                       c.Estado == "Revision");
+
+                if (cotizacion == null)
+                {
+                    return BadRequest(new { message = "Cotización no encontrada o ya fue procesada.", success = false });
+                }
+
+                // 3. Procesar según el tipo de acción
+                if (request.Accion == "aprobar")
+                {
+                    // Aprobar: Activar usuario y cambiar estado de cotización
+                    usuario.Activo = true;
+                    cotizacion.Estado = "Pendiente";
+
+                    // Aquí podrías agregar lógica adicional para crear una venta/orden si es necesario
+                }
+                else if (request.Accion == "rechazar")
+                {
+                    // Rechazar: No activar usuario y cancelar cotización
+                    cotizacion.Estado = "Cancelada";
+                }
+                else
+                {
+                    return BadRequest(new { message = "Acción no válida. Use 'aprobar' o 'rechazar'.", success = false });
+                }
+
+                // 4. Guardar cambios
+                _context.SaveChanges();
+                transaction.Commit();
+
+                return Ok(new
+                {
+                    message = $"Solicitud {request.Accion} correctamente.",
+                    success = true,
+                    usuarioActivo = usuario.Activo,
+                    estadoCotizacion = cotizacion.Estado
+                });
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                return StatusCode(500, new { message = $"Error al procesar la solicitud: {ex.Message}", success = false });
+            }
+        }
+
 
     }
 }
