@@ -13,5 +13,7 @@ public partial class Producto
 
     public bool? Activo { get; set; }
 
+    public virtual ICollection<Cotizacion> Cotizacions { get; set; } = new List<Cotizacion>();
+
     public virtual ICollection<ProductoMaterial> ProductoMaterials { get; set; } = new List<ProductoMaterial>();
 }
