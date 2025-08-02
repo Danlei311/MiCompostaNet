@@ -15,6 +15,8 @@ public partial class Ventum
 
     public int? IdCotizacion { get; set; }
 
+    public virtual ICollection<Comentario> Comentarios { get; set; } = new List<Comentario>();
+
     public virtual Cotizacion? IdCotizacionNavigation { get; set; }
 
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;

@@ -45,7 +45,7 @@ public partial class ComposteraDbContext : DbContext
     {
         modelBuilder.Entity<Comentario>(entity =>
         {
-            entity.HasKey(e => e.IdComentario).HasName("PK__Comentar__DDBEFBF9E52BEB46");
+            entity.HasKey(e => e.IdComentario).HasName("PK__Comentar__DDBEFBF9307FED4E");
 
             entity.ToTable("Comentario");
 
@@ -63,12 +63,17 @@ public partial class ComposteraDbContext : DbContext
             entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.Comentarios)
                 .HasForeignKey(d => d.IdUsuario)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Comentari__IdUsu__6754599E");
+                .HasConstraintName("FK__Comentari__IdUsu__693CA210");
+
+            entity.HasOne(d => d.IdVentaNavigation).WithMany(p => p.Comentarios)
+                .HasForeignKey(d => d.IdVenta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Comentari__IdVen__68487DD7");
         });
 
         modelBuilder.Entity<Compra>(entity =>
         {
-            entity.HasKey(e => e.IdCompra).HasName("PK__Compra__0A5CDB5C6CE54BD2");
+            entity.HasKey(e => e.IdCompra).HasName("PK__Compra__0A5CDB5C6DE23B80");
 
             entity.ToTable("Compra");
 
@@ -85,7 +90,7 @@ public partial class ComposteraDbContext : DbContext
 
         modelBuilder.Entity<CompraDetalle>(entity =>
         {
-            entity.HasKey(e => e.IdCompraDetalle).HasName("PK__CompraDe__A1B840C524255ABA");
+            entity.HasKey(e => e.IdCompraDetalle).HasName("PK__CompraDe__A1B840C54A0E5DF6");
 
             entity.ToTable("CompraDetalle");
 
@@ -105,7 +110,7 @@ public partial class ComposteraDbContext : DbContext
 
         modelBuilder.Entity<Cotizacion>(entity =>
         {
-            entity.HasKey(e => e.IdCotizacion).HasName("PK__Cotizaci__9A6DA9EFB752FDC7");
+            entity.HasKey(e => e.IdCotizacion).HasName("PK__Cotizaci__9A6DA9EFE9BDB84F");
 
             entity.ToTable("Cotizacion");
 
@@ -122,7 +127,7 @@ public partial class ComposteraDbContext : DbContext
             entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.Cotizacions)
                 .HasForeignKey(d => d.IdProducto)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Cotizacio__IdPro__6D0D32F4");
+                .HasConstraintName("FK__Cotizacio__IdPro__6EF57B66");
 
             entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.Cotizacions)
                 .HasForeignKey(d => d.IdUsuario)
@@ -132,7 +137,7 @@ public partial class ComposteraDbContext : DbContext
 
         modelBuilder.Entity<CotizacionDetalle>(entity =>
         {
-            entity.HasKey(e => e.IdCotizacionDetalle).HasName("PK__Cotizaci__6C5616FE41ABA39F");
+            entity.HasKey(e => e.IdCotizacionDetalle).HasName("PK__Cotizaci__6C5616FE6901D983");
 
             entity.ToTable("CotizacionDetalle");
 
@@ -152,7 +157,7 @@ public partial class ComposteraDbContext : DbContext
 
         modelBuilder.Entity<Material>(entity =>
         {
-            entity.HasKey(e => e.IdMaterial).HasName("PK__Material__94356E580F262C10");
+            entity.HasKey(e => e.IdMaterial).HasName("PK__Material__94356E5829C9A494");
 
             entity.ToTable("Material");
 
@@ -176,7 +181,7 @@ public partial class ComposteraDbContext : DbContext
 
         modelBuilder.Entity<MovimientoMaterial>(entity =>
         {
-            entity.HasKey(e => e.IdMovimiento).HasName("PK__Movimien__881A6AE0513F0747");
+            entity.HasKey(e => e.IdMovimiento).HasName("PK__Movimien__881A6AE0853789D9");
 
             entity.ToTable("MovimientoMaterial");
 
@@ -198,12 +203,12 @@ public partial class ComposteraDbContext : DbContext
             entity.HasOne(d => d.IdMaterialNavigation).WithMany(p => p.MovimientoMaterials)
                 .HasForeignKey(d => d.IdMaterial)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Movimient__IdMat__6C190EBB");
+                .HasConstraintName("FK__Movimient__IdMat__6E01572D");
         });
 
         modelBuilder.Entity<Producto>(entity =>
         {
-            entity.HasKey(e => e.IdProducto).HasName("PK__Producto__09889210899F05D9");
+            entity.HasKey(e => e.IdProducto).HasName("PK__Producto__09889210F46A373A");
 
             entity.ToTable("Producto");
 
@@ -218,7 +223,7 @@ public partial class ComposteraDbContext : DbContext
 
         modelBuilder.Entity<ProductoMaterial>(entity =>
         {
-            entity.HasKey(e => new { e.IdProducto, e.IdMaterial }).HasName("PK__Producto__90CBC4F54A4A7160");
+            entity.HasKey(e => new { e.IdProducto, e.IdMaterial }).HasName("PK__Producto__90CBC4F5CA881CFC");
 
             entity.ToTable("ProductoMaterial");
 
@@ -238,7 +243,7 @@ public partial class ComposteraDbContext : DbContext
 
         modelBuilder.Entity<Proveedor>(entity =>
         {
-            entity.HasKey(e => e.IdProveedor).HasName("PK__Proveedo__E8B631AF42980B2F");
+            entity.HasKey(e => e.IdProveedor).HasName("PK__Proveedo__E8B631AF11F59ABB");
 
             entity.ToTable("Proveedor");
 
@@ -269,18 +274,18 @@ public partial class ComposteraDbContext : DbContext
                         .HasConstraintName("FK__Proveedor__IdPro__440B1D61"),
                     j =>
                     {
-                        j.HasKey("IdProveedor", "IdMaterial").HasName("PK__Proveedo__71F5674AF1ECA822");
+                        j.HasKey("IdProveedor", "IdMaterial").HasName("PK__Proveedo__71F5674AE353EF03");
                         j.ToTable("ProveedorMaterial");
                     });
         });
 
         modelBuilder.Entity<Usuario>(entity =>
         {
-            entity.HasKey(e => e.IdUsuario).HasName("PK__Usuario__5B65BF978BB4771E");
+            entity.HasKey(e => e.IdUsuario).HasName("PK__Usuario__5B65BF97BB4012AB");
 
             entity.ToTable("Usuario");
 
-            entity.HasIndex(e => e.Correo, "UQ__Usuario__60695A199EC07B9A").IsUnique();
+            entity.HasIndex(e => e.Correo, "UQ__Usuario__60695A19E9BB93AF").IsUnique();
 
             entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Apellido)
@@ -305,7 +310,7 @@ public partial class ComposteraDbContext : DbContext
 
         modelBuilder.Entity<Ventum>(entity =>
         {
-            entity.HasKey(e => e.IdVenta).HasName("PK__Venta__BC1240BD9F92E811");
+            entity.HasKey(e => e.IdVenta).HasName("PK__Venta__BC1240BD2088975E");
 
             entity.Property(e => e.FechaVenta)
                 .HasDefaultValueSql("(getdate())")

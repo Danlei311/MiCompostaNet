@@ -9,6 +9,8 @@ public partial class Comentario
 
     public int IdUsuario { get; set; }
 
+    public int IdVenta { get; set; }
+
     public string Texto { get; set; } = null!;
 
     public int? Valoracion { get; set; }
@@ -18,4 +20,6 @@ public partial class Comentario
     public string? Estado { get; set; }
 
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;
+
+    public virtual Ventum IdVentaNavigation { get; set; } = null!;
 }
