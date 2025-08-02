@@ -110,5 +110,33 @@ namespace MiComposta.Controllers
                 return StatusCode(500, "Error al actualizar la cotización");
             }
         }
+
+
+        [HttpGet("misCompras/{idCliente}")]
+        public async Task<IActionResult> GetMisCompras(int idCliente)
+        {
+            try
+            {
+                var misCompras = await _context.Venta
+                    .Include(v => v.IdCotizacionNavigation)
+                        .ThenInclude(c => c.IdProductoNavigation)
+                    .Where(v => v.IdCotizacionNavigation.IdUsuario == idCliente)
+                    .Select(v => new
+                    {
+                        v.IdVenta,
+                        v.FechaVenta,
+                        v.Total,
+                        ProductoNombre = v.IdCotizacionNavigation.IdProductoNavigation.Nombre
+                    })
+                    .OrderByDescending(v => v.FechaVenta)
+                    .ToListAsync();
+
+                return Ok(misCompras);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
     }
 }
