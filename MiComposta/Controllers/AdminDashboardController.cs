@@ -127,7 +127,10 @@ namespace MiComposta.Controllers
         [Route("getResumenCotizaciones")]
         public IActionResult ObtenerResumenCotizaciones()
         {
+            // Obtener solo las 5 cotizaciones más recientes
             var cotizaciones = _context.Cotizacions
+                .OrderByDescending(c => c.FechaCotizacion)
+                .Take(5)
                 .Select(c => new
                 {
                     c.IdCotizacion,
@@ -140,7 +143,6 @@ namespace MiComposta.Controllers
                         .Select(u => $"{u.Nombre} {u.Apellido}")
                         .FirstOrDefault()
                 })
-                .OrderByDescending(c => c.Fecha)
                 .ToList();
 
             var totalCotizaciones = cotizaciones.Count;
@@ -186,9 +188,8 @@ namespace MiComposta.Controllers
         [HttpGet("getInversionInventario")]
         public IActionResult GetInversionInventario()
         {
-            var inversionTotal = (from mm in _context.MovimientoMaterials
-                                  join ultimos in
-                                      (from m in _context.MovimientoMaterials
+            var inversionTotal = (from mm in _context.MovimientoMaterials join ultimos in
+                                  (from m in _context.MovimientoMaterials
                                        group m by m.IdMaterial into g
                                        select new
                                        {
