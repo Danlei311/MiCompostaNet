@@ -252,7 +252,7 @@ namespace MiComposta.Controllers
                         usuario.PasswordHash = passwordHasheada;
 
                         string asunto = "Activación de cuenta en MiComposta";
-                        string cuerpo = $"Hola {usuario.Nombre}, De parte del equipo de CJ&A Software Group te queremos decir que tu cuenta ha sido activada correctamente.\n" +
+                        string cuerpo = $"Hola {usuario.Nombre}. De parte del equipo de CJ&A Software Group te queremos decir que tu cuenta ha sido activada correctamente.\n" +
                                         $"Tu usuario es: {usuario.Correo}\n" +
                                         $"Tu contraseña temporal es: {nuevaContrasena}\n\n" +
                                         "Por favor, cambia tu contraseña al iniciar sesión.";
