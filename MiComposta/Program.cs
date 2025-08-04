@@ -1,4 +1,5 @@
 using MiComposta.Models;
+using MiComposta.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,7 @@ builder.Services.AddControllers();
 //builder.Services.AddOpenApi();
 
 builder.Services.AddSwaggerGen();
+builder.Services.AddTransient<IEmailServices, EmailServices>();
 
 var connectionString = builder.Configuration.GetConnectionString("cadenaSQL");
 builder.Services.AddDbContext<ComposteraDbContext>(options =>

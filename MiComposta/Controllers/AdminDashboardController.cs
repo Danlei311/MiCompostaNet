@@ -28,17 +28,23 @@ namespace MiComposta.Controllers
             return Ok(new { cantidad });
         }
 
-        // Suma total de compras realizadas
+        // Suma total de ventas realizadas
         [HttpGet]
-        [Route("getSumaTotalCompras")]
-        public IActionResult ObtenerSumaTotalCompras()
+        [Route("getResumenVentas")]
+        public IActionResult ObtenerResumenVentas()
         {
-            var sumaTotal = _context.Compras
-                .Where(c => c.Total != null)
-                .Sum(c => c.Total);
+            var cantidadVentas = _context.Venta.Count();
+            var totalIngresos = _context.Venta
+                .Where(v => v.Total != null)
+                .Sum(v => v.Total);
 
-            return Ok(new { sumaTotal });
+            return Ok(new
+            {
+                cantidadVentas,
+                totalIngresos
+            });
         }
+
 
         // Cantidad de los proveedores a los que mas se le compran
         [HttpGet]
@@ -185,10 +191,23 @@ namespace MiComposta.Controllers
             return Ok(tendencia);
         }
         // Inversión en inventario 
-        [HttpGet("getInversionInventario")]
-        public IActionResult GetInversionInventario()
+        [HttpGet]
+        [Route("getInversionCompras")]
+        public IActionResult ObtenerInversionHistoricaCompras()
         {
-            var inversionTotal = (from mm in _context.MovimientoMaterials join ultimos in
+            var inversionTotal = _context.MovimientoMaterials
+                .Where(m => m.TipoMovimiento == "Entrada")
+                .Sum(m => m.Cantidad * m.CostoUnitario);
+
+            return Ok(new { inversionTotal });
+        }
+
+
+        // Suma el valor actual del stock (SaldoValor) de cada material, considerando su último movimiento.
+        [HttpGet("valorActualDelStock")]
+        public IActionResult getValorActualStock()
+        {
+            var valorActual = (from mm in _context.MovimientoMaterials join ultimos in
                                   (from m in _context.MovimientoMaterials
                                        group m by m.IdMaterial into g
                                        select new
@@ -199,7 +218,7 @@ namespace MiComposta.Controllers
                                   on new { mm.IdMaterial, mm.Fecha } equals new { ultimos.IdMaterial, Fecha = ultimos.UltimaFecha }
                                   select mm.SaldoValor).Sum();
 
-            return Ok(new { inversionTotal });
+            return Ok(new { valorActual });
         }
 
 
@@ -243,13 +262,74 @@ namespace MiComposta.Controllers
             return Ok(gananciasPorMes);
         }
 
-        // Obtener ganancias totales
-        [HttpGet("getGananciasTotales")]
-        public IActionResult GetGananciasTotales()
+        //Obtener ganancias totales:
+        [HttpGet]
+        [Route("getGananciasTotales")]
+        public IActionResult ObtenerGananciaReal()
         {
-            var totalGanado = _context.Venta.Sum(v => v.Total);
+            var totalVentas = _context.Venta.Sum(v => v.Total ?? 0);
 
-            return Ok(new { gananciaTotal = totalGanado });
+            var totalCostoMaterial = _context.MovimientoMaterials
+                .Where(m => m.TipoMovimiento == "Salida")
+                .Sum(m => m.Cantidad * m.CostoUnitario);
+
+            var gananciaReal = totalVentas - totalCostoMaterial;
+
+            return Ok(gananciaReal);
+        }
+
+        // Obtener costo de material de salida
+        [HttpGet]
+        [Route("getCostoMaterial")]
+        public IActionResult ObtenerCostoMaterial()
+        {
+            var totalCostoMaterial = _context.MovimientoMaterials
+                .Where(m => m.TipoMovimiento == "Salida")
+                .Sum(m => m.Cantidad * m.CostoUnitario);
+
+            return Ok(totalCostoMaterial);
+        }
+
+        // Obtener entradas y salidas de material, ademas de obtener el stock de material actual vigente
+        [HttpGet]
+        [Route("getResumenInventario")]
+        public IActionResult ObtenerResumenInventario()
+        {
+            var movimientos = _context.MovimientoMaterials;
+
+            // Total de cantidad acumulada en movimientos de entrada
+            var cantidadTotalEntradas = movimientos
+                .Where(m => m.TipoMovimiento == "Entrada")
+                .Sum(m => (decimal?)m.Cantidad) ?? 0m;
+
+            // Total de cantidad acumulada en movimientos de salida
+            var cantidadTotalSalidas = movimientos
+                .Where(m => m.TipoMovimiento == "Salida")
+                .Sum(m => (decimal?)m.Cantidad) ?? 0m;
+
+            // Obtener último movimiento por material para conocer el saldo actual
+            var ultimosMovimientosPorMaterial = movimientos
+                .GroupBy(m => m.IdMaterial)
+                .Select(g => new
+                {
+                    IdMaterial = g.Key,
+                    FechaUltimoMovimiento = g.Max(x => x.Fecha)
+                })
+                .Join(movimientos,
+                      g => new { g.IdMaterial, Fecha = g.FechaUltimoMovimiento },
+                      m => new { m.IdMaterial, Fecha = m.Fecha },
+                      (g, m) => m);
+
+            // Suma del saldo cantidad actual de todos los materiales
+            var saldoCantidadTotalInventario = ultimosMovimientosPorMaterial
+                .Sum(m => (decimal?)m.SaldoCantidad) ?? 0m;
+
+            return Ok(new
+            {
+                CantidadTotalEntradas = cantidadTotalEntradas,
+                CantidadTotalSalidas = cantidadTotalSalidas,
+                SaldoCantidadTotalInventario = saldoCantidadTotalInventario
+            });
         }
 
     }

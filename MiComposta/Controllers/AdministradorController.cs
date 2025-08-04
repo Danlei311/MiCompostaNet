@@ -1,5 +1,6 @@
 ﻿using MiComposta.Dto;
 using MiComposta.Models;
+using MiComposta.Services;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
@@ -13,10 +14,12 @@ namespace MiComposta.Controllers
     public class AdministradorController : ControllerBase
     {
         private readonly ComposteraDbContext _context;
+        private readonly IEmailServices _emailService;
 
-        public AdministradorController(ComposteraDbContext context)
+        public AdministradorController(ComposteraDbContext context, IEmailServices emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         [HttpPost]
@@ -214,45 +217,51 @@ namespace MiComposta.Controllers
             return Ok(usuariosPendientes);
         }
 
-
         [HttpPut]
         [Route("procesarSolicitud/{idUsuario}")]
-        public IActionResult ProcesarSolicitud(int idUsuario, [FromBody] ProcesarSolicitudDto request)
+        public async Task<IActionResult> ProcesarSolicitud(int idUsuario, [FromBody] ProcesarSolicitudDto request)
         {
             using var transaction = _context.Database.BeginTransaction();
 
             try
             {
-                // 1. Verificar que el usuario existe
                 var usuario = _context.Usuarios.FirstOrDefault(u => u.IdUsuario == idUsuario);
                 if (usuario == null)
-                {
                     return NotFound(new { message = "Usuario no encontrado.", success = false });
-                }
 
-                // 2. Verificar que la cotización existe y está en estado "Revision"
                 var cotizacion = _context.Cotizacions
                     .FirstOrDefault(c => c.IdCotizacion == request.IdCotizacion &&
-                                       c.IdUsuario == idUsuario &&
-                                       c.Estado == "Revision");
+                                         c.IdUsuario == idUsuario &&
+                                         c.Estado == "Revision");
 
                 if (cotizacion == null)
-                {
                     return BadRequest(new { message = "Cotización no encontrada o ya fue procesada.", success = false });
-                }
 
-                // 3. Procesar según el tipo de acción
                 if (request.Accion == "aprobar")
                 {
-                    // Aprobar: Activar usuario y cambiar estado de cotización
+                    bool esPrimeraAprobacion = !(usuario.Activo ?? false);
+
                     usuario.Activo = true;
                     cotizacion.Estado = "Pendiente";
 
-                    // Aquí podrías agregar lógica adicional para crear una venta/orden si es necesario
+                    // Solo generar contraseña temporal si es la primera vez
+                    if (esPrimeraAprobacion)
+                    {
+                        string nuevaContrasena = GenerarPasswordTemporal();
+                        string passwordHasheada = HashPassword(nuevaContrasena);
+                        usuario.PasswordHash = passwordHasheada;
+
+                        string asunto = "Activación de cuenta en MiComposta";
+                        string cuerpo = $"Hola {usuario.Nombre}. De parte del equipo de CJ&A Software Group te queremos decir que tu cuenta ha sido activada correctamente.\n" +
+                                        $"Tu usuario es: {usuario.Correo}\n" +
+                                        $"Tu contraseña temporal es: {nuevaContrasena}\n\n" +
+                                        "Por favor, cambia tu contraseña al iniciar sesión.";
+
+                        await _emailService.EnviarEmail(usuario.Correo, asunto, cuerpo);
+                    }
                 }
                 else if (request.Accion == "rechazar")
                 {
-                    // Rechazar: No activar usuario y cancelar cotización
                     cotizacion.Estado = "Cancelada";
                 }
                 else
@@ -260,7 +269,6 @@ namespace MiComposta.Controllers
                     return BadRequest(new { message = "Acción no válida. Use 'aprobar' o 'rechazar'.", success = false });
                 }
 
-                // 4. Guardar cambios
                 _context.SaveChanges();
                 transaction.Commit();
 
@@ -278,6 +286,15 @@ namespace MiComposta.Controllers
                 return StatusCode(500, new { message = $"Error al procesar la solicitud: {ex.Message}", success = false });
             }
         }
+
+        private string GenerarPasswordTemporal()
+        {
+            const string caracteres = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+            var random = new Random();
+            return new string(Enumerable.Repeat(caracteres, 10)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
 
 
     }
