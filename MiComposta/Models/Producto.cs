@@ -11,6 +11,8 @@ public partial class Producto
 
     public string? Descripcion { get; set; }
 
+    public string Capacidad { get; set; } = null!;
+
     public bool? Activo { get; set; }
 
     public virtual ICollection<Cotizacion> Cotizacions { get; set; } = new List<Cotizacion>();

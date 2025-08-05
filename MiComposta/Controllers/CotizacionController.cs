@@ -30,6 +30,7 @@ namespace MiComposta.Controllers
                 {
                     p.IdProducto,
                     p.Nombre,
+                    p.Capacidad,
                     Materiales = p.ProductoMaterials
                         .Where(pm => pm.Obligatorio == false)  // Solo materiales no obligatorios
                         .Select(pm => new

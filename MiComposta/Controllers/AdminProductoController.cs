@@ -27,6 +27,7 @@ namespace MiComposta.Controllers
                 {
                     Nombre = productoRequest.Nombre,
                     Descripcion = productoRequest.Descripcion,
+                    Capacidad = productoRequest.Capacidad,
                     Activo = true
                 };
 
@@ -80,6 +81,7 @@ namespace MiComposta.Controllers
                     p.IdProducto,
                     p.Nombre,
                     p.Descripcion,
+                    p.Capacidad,
                     Materiales = p.ProductoMaterials.Select(pm => new
                     {
                         pm.IdMaterial,
